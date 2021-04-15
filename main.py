@@ -33,6 +33,9 @@ if __name__ == "__main__":
         
         key = d["participantId"]
         value = d["deviceId"]
+        start= d["startDate"]
+        end=d["endDate"]
+        
         if key[0] != "K" or "BTF" not in value:
             continue
         
