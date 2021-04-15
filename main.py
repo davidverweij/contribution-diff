@@ -52,7 +52,7 @@ if __name__ == "__main__":
     result_them = {}
     for patient in them:
         if patient in us:
-            #  in us but not in them:
+            #  in them but not in us:
             them_not_us = them[patient] - us[patient]
             if len(them_not_us) > 0:
                 result_them[patient] = them_not_us
