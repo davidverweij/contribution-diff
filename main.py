@@ -34,7 +34,7 @@ if __name__ == "__main__":
         if key[0] != "K" or "BTF" not in value:
             continue
         
-        if item["uploadedBy"] == wp3:
+        if item["uploadedBy"] == we_are:
             us.setdefault(key,set()).add(value)
         else:
             them.setdefault(key,set()).add(value)
