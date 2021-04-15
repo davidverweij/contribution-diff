@@ -1,7 +1,6 @@
 
 from pathlib import Path
 import json
-import os
 
 def read_json(filepath: Path):
     with open(filepath, "r") as f:
@@ -13,15 +12,18 @@ def write_json(filepath: Path, data: dict):
         json.dump(data, f, indent=4)
 
 class SetEncoder(json.JSONEncoder):
+    """Custom encoder to transform set() to list()"""
     def default(self, obj):
         if isinstance(obj, set):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
 
 folder = Path(__file__).parent
-we_are = os.getenv("OUR_ID")
 
 if __name__ == "__main__":
+
+    settings = read_json(Path(f'{folder}/settings.json'))
+    we_are = settings["our_id"]
     
     us = {}
     them = {}
