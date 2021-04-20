@@ -103,6 +103,7 @@ def view(study_site):
             filtered[patient][device] = f"{dates[0]};{dates[-1]}"
 
     print(json.dumps(filtered,cls=SetEncoder,sort_keys=True, indent=4))
+    write_json(Path(f'{folder}/view_{study_site}.json'),filtered)
     
 if __name__ == "__main__":
     """
