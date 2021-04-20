@@ -4,6 +4,7 @@ from pathlib import Path
 import json
 from datetime import date, timedelta
 from collections import defaultdict
+import pandas as pd
 
 def read_json(filepath: Path):
     with open(filepath, "r") as f:
