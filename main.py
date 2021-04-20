@@ -27,7 +27,7 @@ if __name__ == "__main__":
     
     us = {}
     them = {}
-    data = read_json(Path(f'{folder}/all_records.json'))
+    data = read_json(Path(f'{folder}/all_records_20_04_21.json'))["data"]["getStudy"]["files"]
     for item in data:
         d = json.loads(item["description"])
         
