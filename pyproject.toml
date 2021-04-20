@@ -6,7 +6,6 @@ authors = ["David <davidverweij@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pandas = "^1.2.4"
 
 [tool.poetry.dev-dependencies]
 

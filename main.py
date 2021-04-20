@@ -2,9 +2,10 @@
 import sys
 from pathlib import Path
 import json
+import csv
 from datetime import date, timedelta
 from collections import defaultdict
-import pandas as pd
+from dataclasses import dataclass
 
 def read_json(filepath: Path):
     with open(filepath, "r") as f:
@@ -25,12 +26,12 @@ class SetEncoder(json.JSONEncoder):
 folder = Path(__file__).parent
 
 def diff(study_site, device):
-    settings = read_json(Path(f'{folder}/settings.json'))
+    settings = read_json(Path(f'{folder}/src/settings.json'))
     we_are = settings["our_id"]
     
     us = {}
     them = {}
-    data = read_json(Path(f'{folder}/all_records.json'))["data"]["getStudy"]["files"]
+    data = read_json(Path(f'{folder}/src/all_records.json'))["data"]["getStudy"]["files"]
     for item in data:
         d = json.loads(item["description"])
         
@@ -74,10 +75,10 @@ def diff(study_site, device):
 
 
 def view(study_site):
-    settings = read_json(Path(f'{folder}/settings.json'))
+    settings = read_json(Path(f'{folder}/src/settings.json'))
     
-    result = defaultdict(lambda: defaultdict(set))
-    data = read_json(Path(f'{folder}/all_records.json'))["data"]["getStudy"]["files"]
+    result = defaultdict(lambda: defaultdict(lambda: defaultdict(set)))
+    data = read_json(Path(f'{folder}/src/all_records.json'))["data"]["getStudy"]["files"]
     for item in data:
         d = json.loads(item["description"])
         
@@ -95,16 +96,67 @@ def view(study_site):
        
         days_covered = [start + timedelta(days=i) for i in range(delta.days + 1)]
         for day in days_covered:
-            result[key][value[:3]].add(day.isoformat())
-        
-    filtered = defaultdict(lambda: defaultdict(str))
-    for patient in result:
-        for device in result[patient]:
-            dates = sorted(result[patient][device])
-            filtered[patient][device] = f"{dates[0]};{dates[-1]}"
+            result[key][value[:3]][value].add(day.isoformat())
+    
+    # print(json.dumps(result,cls=SetEncoder,sort_keys=True, indent=4))
+    sub_cell = {
+        'f' : '',
+        't' : '',
+        '#' : 0,
+    }
 
-    print(json.dumps(filtered,cls=SetEncoder,sort_keys=True, indent=4))
-    write_json(Path(f'{folder}/view_{study_site}.json'),filtered)
+    ideafast_patient = {
+        'AX6' : sub_cell.copy(),
+        'BED' : sub_cell.copy(),
+        'BTF' : sub_cell.copy(),
+        'DRM' : sub_cell.copy(),
+        'IDE' : sub_cell.copy(),
+        'MMM' : sub_cell.copy(),
+        'SMA' : sub_cell.copy(),
+        'TFA' : sub_cell.copy(),
+        'VTP' : sub_cell.copy(),
+        'YSM' : sub_cell.copy(),
+    }
+
+    filtered = defaultdict(lambda: ideafast_patient.copy())
+    for patient in result:
+        for device_type in result[patient]:
+            dates_all = set()
+            for device in result[patient][device_type]:
+                dates_all.update(result[patient][device_type][device])
+            
+            dates = sorted(dates_all)
+            filtered[patient][device_type] = {
+                'f' : dates[0],
+                't' : dates[-1],
+                '#' : len(result[patient][device_type])
+            }
+
+    
+    # print(json.dumps(filtered,cls=SetEncoder,sort_keys=True, indent=4))
+
+    # to csv
+    csv_file = open(Path(f'{folder}/output/view_{study_site}.csv'), 'w')
+    csvwriter = csv.writer(csv_file)
+
+    top_header = ['']
+    headers = ['patient_id']
+    for key in ideafast_patient.keys():
+        top_header.extend(['',key,''])
+        headers.extend(['f','t','#'])
+    
+    csvwriter.writerow(top_header)
+    csvwriter.writerow(headers)
+    for patient in filtered:
+        row = [patient]
+        for device in filtered[patient]:
+            row.extend(filtered[patient][device].values())
+
+        csvwriter.writerow(row)
+
+    csv_file.close()
+
+    # write_json(Path(f'{folder}/output/view_{study_site}.json'),filtered)
     
 if __name__ == "__main__":
     """
